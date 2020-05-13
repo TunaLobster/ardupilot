@@ -257,6 +257,9 @@ private:
     // high point of angle or range output
     uint16_t high_out;
 
+    // override loop counter
+    uint16_t override_counter;
+
     // convert a 0..range_max to a pwm
     uint16_t pwm_from_range(int16_t scaled_value) const;
 
@@ -319,6 +322,9 @@ public:
 
     // set output value for a specific function channel as a pwm value for a number of loops
     static void set_output_pwm_chan_counter(uint8_t chan, uint16_t value, uint16_t counter);
+
+    // zero the counter to remove lock before counter is zero
+    static void set_output_pwm_chan_counter_zero(uint8_t chan, uint16_t value);
 
     // set output value for a function channel as a scaled value. This
     // calls calc_pwm() to also set the pwm value
@@ -505,7 +511,6 @@ private:
     // this static arrangement is to avoid having static objects in AP_Param tables
     static SRV_Channel *channels;
     static SRV_Channels *_singleton;
-    static uint16_t *channel_lock_counters;
 
     // support for Volz protocol
     AP_Volz_Protocol volz;

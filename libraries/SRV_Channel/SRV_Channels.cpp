@@ -55,7 +55,6 @@ bool SRV_Channels::initialised;
 bool SRV_Channels::emergency_stop;
 Bitmask<SRV_Channel::k_nr_aux_servo_functions> SRV_Channels::function_mask;
 SRV_Channels::srv_function SRV_Channels::functions[SRV_Channel::k_nr_aux_servo_functions];
-uint16_t *SRV_Channels::channel_lock_counters;
 
 const AP_Param::GroupInfo SRV_Channels::var_info[] = {
     // @Group: 1_
@@ -176,7 +175,7 @@ SRV_Channels::SRV_Channels(void)
 
     // set all lock counters to zero
     for (uint8_t i=0; i<NUM_SERVO_CHANNELS; i++) {
-        channel_lock_counters[i] = 0;
+        channels[i].override_counter = 0;
     }
 
     volz_ptr = &volz;
@@ -217,10 +216,10 @@ void SRV_Channels::calc_pwm(void)
     for (uint8_t i=0; i<NUM_SERVO_CHANNELS; i++) {
         // check if channel has been locked out for this loop
         // if it has, decrement the loop count for that channel
-        if (channel_lock_counters[i] == 0) {
+        if (channels[i].override_counter == 0) {
             channels[i].calc_pwm(functions[channels[i].function].output_scaled);
         } else {
-            channel_lock_counters[i]--;
+            channels[i].override_counter =  channels[i].override_counter - 1;
         }
     }
 }
@@ -236,7 +235,16 @@ void SRV_Channels::set_output_pwm_chan(uint8_t chan, uint16_t value)
 void SRV_Channels::set_output_pwm_chan_counter(uint8_t chan, uint16_t value, uint16_t counter)
 {
     if (chan < NUM_SERVO_CHANNELS) {
-        channel_lock_counters[chan] = counter;
+        channels[chan].override_counter = counter;
+    }
+    SRV_Channels::set_output_pwm_chan(chan, value);
+
+}
+
+void SRV_Channels::set_output_pwm_chan_counter_zero(uint8_t chan, uint16_t value)
+{
+    if (chan < NUM_SERVO_CHANNELS) {
+        channels[chan].override_counter = 0;
     }
     SRV_Channels::set_output_pwm_chan(chan, value);
 
