@@ -317,6 +317,9 @@ public:
     // set output value for a specific function channel as a pwm value
     static void set_output_pwm_chan(uint8_t chan, uint16_t value);
 
+    // set output value for a specific function channel as a pwm value for a number of loops
+    static void set_output_pwm_chan_counter(uint8_t chan, uint16_t value, uint16_t counter);
+
     // set output value for a function channel as a scaled value. This
     // calls calc_pwm() to also set the pwm value
     static void set_output_scaled(SRV_Channel::Aux_servo_function_t function, int16_t value);
@@ -502,6 +505,7 @@ private:
     // this static arrangement is to avoid having static objects in AP_Param tables
     static SRV_Channel *channels;
     static SRV_Channels *_singleton;
+    static uint16_t *channel_lock_counters;
 
     // support for Volz protocol
     AP_Volz_Protocol volz;
