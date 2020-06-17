@@ -52,9 +52,9 @@ def isb_parser(logfile):
                 self.holes = True
                 return
             self.seqno += 1
-            self.data["X"].extend(fftd.x)
-            self.data["Y"].extend(fftd.y)
-            self.data["Z"].extend(fftd.z)
+            self.data["X"].extend(fftd.x[1:-1].split())
+            self.data["Y"].extend(fftd.y[1:-1].split())
+            self.data["Z"].extend(fftd.z[1:-1].split())
 
         def prefix(self):
             if self.sensor_type == 0:
