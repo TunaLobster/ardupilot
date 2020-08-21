@@ -1,0 +1,1 @@
+This is a example MATLAB multicopter backend for the JSON SITL interface. SIM_validate is used to set attitudes and rates to observe the output from ArduPilot.
