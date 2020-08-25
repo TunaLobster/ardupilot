@@ -40,75 +40,102 @@ function state = init(state)
     state.bf_velo = [0;0;0]; % (m/s) body frame
 end
 
+function rate = angle2rate(state,axis,desired_attitude)
+    rate = (deg2rad(desired_attitude) - state.attitude(axis)) / state.delta_t;
+end
+
+function state = axis_angles(state,window_time,max_angle,max_attitude_rate)
+    if state.physics_time < window_time
+        if state.enable_print == 1
+            state.enable_print = 0;
+            fprintf('start motion\n')
+        end
+        % Roll 15 deg at max rate
+        state.gyro = [angle2rate(state,1,max_angle);0;0];
+    elseif state.physics_time < window_time * 2
+        state.enable_print = 1;
+        state.gyro = [angle2rate(state,1,0);0;0];
+    elseif state.physics_time < window_time * 3
+        % Pitch 15 deg
+        state.gyro = [0;angle2rate(state,2,max_angle);0];
+    elseif state.physics_time < window_time * 4
+        state.gyro = [0;angle2rate(state,2,0);0];
+    elseif state.physics_time < window_time * 5
+        % Yaw 15 deg
+        state.gyro = [0;0;angle2rate(state,3,max_angle)];
+    elseif state.physics_time < window_time * 6
+        state.gyro = [0;0;angle2rate(state,3,0)];
+    end
+    state.gyro = max(state.gyro,deg2rad(-abs(max_attitude_rate)));
+    state.gyro = min(state.gyro,deg2rad(abs(max_attitude_rate)));
+end
+
+function state = axis_rates(state,window_time)
+    if state.physics_time < window_time * 7
+        % Roll 5 deg/sec
+        state.gyro = [deg2rad(5);0;0];
+    elseif state.physics_time < window_time * 8
+        state.gyro = [angle2rate(state,1,0);0;0];
+    elseif state.physics_time < window_time * 9
+        % Pitch 5 deg/sec
+        state.gyro = [0;deg2rad(5);0];
+    elseif state.physics_time < window_time * 10
+        state.gyro = [0;angle2rate(state,2,0);0];
+    elseif state.physics_time < window_time * 11
+        % Yaw 5 deg/sec
+        state.gyro = [0;0;deg2rad(5)];
+    elseif state.physics_time < window_time * 12
+        if state.enable_print == 1
+            state.enable_print = 0;
+            fprintf('done!\n')
+        end
+        state.gyro = [0;0;angle2rate(state,3,0)];
+    end
+    
+end
+
 % Take a physics time step
 function state = physics_step(pwm_in,state)
     % Depending on what the RC channel says, change attitude or rate
     % When RC 5 goes high, start the sequence. This is done from the GCS to
     % make sure that the autopilot is armed and ready to go before beginning.
-    
-    % Need to change this.
-    % - Rotate at 200 deg/sec until attitude is greater than desired for
-    % attitude.
-    % - Rotate at 5 deg/s and find attidue that matches that step.
+    % Roll-Pitch-Yaw order
+
+    % Settings for angle based inputs
+    max_attitude_rate = 200;
+    desired_attitude = 15;
+    window_time = 5;
     
     if pwm_in(5) > 1500
         state.physics_time = state.physics_time + state.delta_t;
         % start sequence
-        % attidue angles first. Start from zero each time.
-        % Roll-Pitch-Yaw order
-        window_time = 10;
-        if state.physics_time < window_time
-            if state.enable_print == 1
-                state.enable_print = 0;
-                fprintf('start motion\n')
-            end
-            % Roll 15 deg
-            state.attitude = [deg2rad(15);0;0];
-        elseif state.physics_time < window_time * 2
-            state.enable_print = 1;
-            state.attitude = [0;0;0];
-        elseif state.physics_time < window_time * 3
-            % Pitch 15 deg
-            state.attitude = [0;deg2rad(15);0];
-        elseif state.physics_time < window_time * 4
-            state.attitude = [0;0;0];
-        elseif state.physics_time < window_time * 5
-            % Yaw 15 deg
-            state.attitude = [0;0;deg2rad(15)];
-        elseif state.physics_time < window_time * 6
-            state.attitude = [0;0;0];
-        % state.physics_time rates
-        elseif state.physics_time < window_time * 7
-            % Roll 5 deg/sec
-            state.gyro = [deg2rad(5);0;0];
-        elseif state.physics_time < window_time * 8
-            state.gyro = [0;0;0];
-        elseif state.physics_time < window_time * 9
-            % Pitch 5 deg/sec
-            state.gyro = [0;deg2rad(5);0];
-        elseif state.physics_time < window_time * 10
-            state.gyro = [0;0;0];
-        elseif state.physics_time < window_time * 11
-            % Yaw 5 deg/sec
-            state.gyro = [0;0;deg2rad(5)];
+        if state.physics_time < window_time * 6
+            state = axis_angles(state,window_time,desired_attitude,max_attitude_rate);
         elseif state.physics_time < window_time * 12
-            if state.enable_print == 1
-                state.enable_print = 0;
-                fprintf('done!\n')
-            end
-            state.gyro = [0;0;0];
+            state = axis_rates(state,window_time);
+        else
+            state.gyro = [angle2rate(state,1,0);angle2rate(state,2,0);angle2rate(state,3,0)];
         end
-        % update the dcm and attitude
-        %[state.dcm, state.attitude] = rotate_dcm(state.dcm,state.gyro * state.delta_t);
     else
-        % reset everything and go back to init state
+        % reset everything and go back to zero state
         state.physics_time = 0;
-        state = init(state);
+        state.enable_print = 1;
+        state.gyro = [angle2rate(state,1,0);angle2rate(state,2,0);angle2rate(state,3,0)];
     end
+
+    % state.gyro = state.gyro + rot_accel * state.delta_t;
+
+    % Constrain to 2000 deg per second, this is what typical sensors max out at
+    state.gyro = max(state.gyro,deg2rad(-2000));
+    state.gyro = min(state.gyro,deg2rad(2000));
+
+    % update the dcm, attitude, and gravity vector
+    [state.dcm, state.attitude] = rotate_dcm(state.dcm,state.gyro * state.delta_t);
     % set the gravity vector
-    state.accel = [state.gravity_mss * sin(state.attitude(2))
-                   state.gravity_mss * cos(state.attitude(2)) * sin(state.attitude(1))
-                   state.gravity_mss * cos(state.attitude(2)) * cos(state.attitude(1))];
+    % state.accel = [state.gravity_mss * sin(state.attitude(2))
+    %                state.gravity_mss * cos(state.attitude(2)) * sin(state.attitude(1))
+    %                state.gravity_mss * cos(state.attitude(2)) * cos(state.attitude(1))];
+    state.accel = state.dcm' * [0; 0; -state.gravity_mss];
 end
 
 function [dcm, euler] = rotate_dcm(dcm, ang)
