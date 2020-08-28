@@ -50,14 +50,14 @@ function state = axis_angles(state,window_time,max_angle,max_attitude_rate)
             state.enable_print = 0;
             fprintf('start motion\n')
         end
-        % Roll 15 deg at max rate
+        % Roll 15 deg at max_attitude_rate
         state.gyro = [angle2rate(state,1,max_angle);0;0];
     elseif state.physics_time < window_time * 2
         state.enable_print = 1;
         state.gyro = [angle2rate(state,1,0);0;0];
     elseif state.physics_time < window_time * 3
-        % Pitch 15 deg
-        state.gyro = [0;angle2rate(state,2,max_angle);0];
+        % Pitch 5 deg
+        state.gyro = [0;angle2rate(state,2,5);0];
     elseif state.physics_time < window_time * 4
         state.gyro = [0;angle2rate(state,2,0);0];
     elseif state.physics_time < window_time * 5
@@ -102,7 +102,7 @@ function state = physics_step(pwm_in,state)
     % Roll-Pitch-Yaw order
 
     % Settings for angle based inputs
-    max_attitude_rate = 200;
+    max_attitude_rate = 50;
     desired_attitude = 15;
     window_time = 5;
     
@@ -123,18 +123,12 @@ function state = physics_step(pwm_in,state)
         state.gyro = [angle2rate(state,1,0);angle2rate(state,2,0);angle2rate(state,3,0)];
     end
 
-    % state.gyro = state.gyro + rot_accel * state.delta_t;
-
     % Constrain to 2000 deg per second, this is what typical sensors max out at
     state.gyro = max(state.gyro,deg2rad(-2000));
     state.gyro = min(state.gyro,deg2rad(2000));
 
     % update the dcm, attitude, and gravity vector
     [state.dcm, state.attitude] = rotate_dcm(state.dcm,state.gyro * state.delta_t);
-    % set the gravity vector
-    % state.accel = [state.gravity_mss * sin(state.attitude(2))
-    %                state.gravity_mss * cos(state.attitude(2)) * sin(state.attitude(1))
-    %                state.gravity_mss * cos(state.attitude(2)) * cos(state.attitude(1))];
     state.accel = state.dcm' * [0; 0; -state.gravity_mss];
 end
 
