@@ -366,6 +366,8 @@ void XPlane::send_data(const struct sitl_input &input)
     float aileron  = (input.servos[0]-1500)/500.0f;
     float elevator = (input.servos[1]-1500)/500.0f;
     float throttle = (input.servos[2]-1000)/1000.0;
+    // Locust
+    float throttle2 = (input.servos[5]-1000)/1000.0;
     float rudder   = (input.servos[3]-1500)/500.0f;
     struct PACKED {
         uint8_t  marker[5] { 'D', 'A', 'T', 'A', '0' };
@@ -381,6 +383,10 @@ void XPlane::send_data(const struct sitl_input &input)
     }
     if (input.servos[2] == 0) {
         throttle = 0;
+    }
+    // Locust
+    if (input.servos[5] == 0) {
+        throttle2 = 0;
     }
     if (input.servos[3] == 0) {
         rudder = 0;
@@ -408,9 +414,11 @@ void XPlane::send_data(const struct sitl_input &input)
     socket_out.send(&d, sizeof(d));
 
     if (!heli_frame) {
+        // allow for extra throttle outputs for special aircraft (Locust)
+        // float throttle2 = (input.servos[5]-1000)/1000.0;
         d.code = ThrottleCommand;
         d.data[0] = throttle;
-        d.data[1] = throttle;
+        d.data[1] = throttle2;
         d.data[2] = throttle;
         d.data[3] = throttle;
         d.data[4] = 0;
