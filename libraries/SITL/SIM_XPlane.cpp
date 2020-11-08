@@ -431,7 +431,7 @@ void XPlane::send_data(const struct sitl_input &input)
         throttle = (input.servos[7]-1000)/1000.0;
 
         // allow for extra throttle outputs for special aircraft
-        float throttle2 = (input.servos[5]-1000)/1000.0;
+        // float throttle2 = (input.servos[5]-1000)/1000.0;
         float throttle3 = (input.servos[6]-1000)/1000.0;
 
         d.code = PropPitch;
