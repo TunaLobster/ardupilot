@@ -253,7 +253,6 @@ class AutoTestRover(AutoTest):
             self.set_parameter("SERVO%u_MAX" % spinner_ch, spinner_ch_max)
 
             self.set_parameter("SIM_SPR_ENABLE", 1)
-            self.fetch_parameters()
             self.set_parameter("SIM_SPR_PUMP", pump_ch)
             self.set_parameter("SIM_SPR_SPIN", spinner_ch)
 
@@ -367,7 +366,20 @@ class AutoTestRover(AutoTest):
         self.disarm_vehicle()
 
     def do_get_banner(self):
-        self.mavproxy.send("long DO_SEND_BANNER 1\n")
+        target_sysid = self.sysid_thismav()
+        target_compid = 1
+        self.mav.mav.command_long_send(
+            target_sysid,
+            target_compid,
+            mavutil.mavlink.MAV_CMD_DO_SEND_BANNER,
+            1, # confirmation
+            1, # send it
+            0,
+            0,
+            0,
+            0,
+            0,
+            0)
         start = time.time()
         while True:
             m = self.mav.recv_match(type='STATUSTEXT',
@@ -455,13 +467,24 @@ Brakes have negligible effect (with=%0.2fm without=%0.2fm delta=%0.2fm)
         '''maximum distance allowed from home at end'''
         return 6.5
 
-    def drive_rtl_mission(self):
+    def drive_rtl_mission(self, timeout=120):
         self.wait_ready_to_arm()
         self.arm_vehicle()
 
         self.load_mission("rtl.txt")
         self.change_mode("AUTO")
-        self.mavproxy.expect('Mission: 3 RTL')
+
+        tstart = self.get_sim_time()
+        while True:
+            now = self.get_sim_time_cached()
+            if now - tstart > timeout:
+                raise AutoTestTimeoutException("Didn't see wp 3")
+            m = self.mav.recv_match(type='MISSION_CURRENT',
+                                    blocking=True,
+                                    timeout=1)
+            self.progress("MISSION_CURRENT: %s" % str(m))
+            if m.seq == 3:
+                break
 
         self.drain_mav();
 
@@ -4655,9 +4678,9 @@ Brakes have negligible effect (with=%0.2fm without=%0.2fm delta=%0.2fm)
         self.set_parameter("AVOID_ENABLE", 0)
         self.do_RTL()
 
-    def do_RTL(self, timeout=60):
+    def do_RTL(self, distance_min=3, distance_max=7, timeout=60):
         self.change_mode("RTL")
-        self.wait_distance_to_home(3, 7, timeout=timeout)
+        self.wait_distance_to_home(distance_min, distance_max, timeout=timeout)
 
     def test_poly_fence_avoidance(self, target_system=1, target_component=1):
         self.change_mode("LOITER")
