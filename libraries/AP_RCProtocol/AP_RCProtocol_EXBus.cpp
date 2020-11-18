@@ -51,7 +51,7 @@ bool AP_RCProtocol_EXBus::exbus_decode(const uint8_t packet[56], uint16_t *value
     if (packet[1] != 0x01 || packet[1] != 0x03) {
         return false;
     }
-    
+
     /* check that we are getting a 16 channel packet. We don't support more than 16 right now. */
     // packet length (should be 40)
     if (packet[2] != 0x28) {
@@ -72,7 +72,13 @@ bool AP_RCProtocol_EXBus::exbus_decode(const uint8_t packet[56], uint16_t *value
     
 
     /* now for all the channel data. 2 bytes into 16-bit channel value with 16 channels.*/
+    // this is the dumb way. Maybe actually use the SUB_LEN in patcket[5]?
+    for (uint8_t i = 6; i < 38; i += 2) {
+        values[i-6] = (packet[i+1] << 8 | packet[i]) / 8; // LSB, MSB sequence
+    }
     
+    // that should be everything
+    return true;
 }
 
 // crc code from Jeti EXBus v1.21 doc
