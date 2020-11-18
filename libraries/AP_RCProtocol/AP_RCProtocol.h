@@ -42,6 +42,7 @@ public:
         ST24,
         FPORT,
         FPORT2,
+        EXBUS,
         NONE    //last enum always is None
     };
     void init();
@@ -110,6 +111,8 @@ private:
         CONFIG_115200_8N1I = 1,
         CONFIG_100000_8E2I = 2,
         CONFIG_420000_8N1 = 3,
+        CONFIG_125000_8N1 = 4,
+        CONFIG_250000_8N1 = 5
     };
 
     // optional additional uart

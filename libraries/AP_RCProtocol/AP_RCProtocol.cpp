@@ -30,6 +30,7 @@
 #include "AP_RCProtocol_ST24.h"
 #include "AP_RCProtocol_FPort.h"
 #include "AP_RCProtocol_FPort2.h"
+#include "AP_RCProtocol_EXBus.h"
 #include <AP_Math/AP_Math.h>
 #include <RC_Channel/RC_Channel.h>
 
@@ -372,6 +373,8 @@ const char *AP_RCProtocol::protocol_name_from_protocol(rcprotocol_t protocol)
         return "FPORT";
     case FPORT2:
         return "FPORT2";
+    case EXBUS:
+        return "EXBus";
     case NONE:
         break;
     }
