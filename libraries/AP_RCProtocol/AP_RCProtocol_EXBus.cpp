@@ -128,6 +128,9 @@ void AP_RCProtocol_EXBus::_process_byte(uint32_t timestamp_us, uint8_t b)
 {
     // gap before a new EXBus frame is not defined. Just have to look for the correct header.
 
+    // check every 2 bytes for the correct match. Dump buffer if it doesn't match.
+    // if those 2 bytes match, get the length of the packet, wait until the end, calc the crc, then take the RC data
+
     // const bool have_frame_gap = (timestamp_us - byte_input.last_byte_us >= 2000U);
     // byte_input.last_byte_us = timestamp_us;
 
