@@ -254,7 +254,6 @@ userdata Parameter method get boolean float'Null
 userdata Parameter method set boolean float -FLT_MAX FLT_MAX
 userdata Parameter method set_and_save boolean float -FLT_MAX FLT_MAX
 
-
 include AP_Mission/AP_Mission.h
 singleton AP_Mission alias mission
 singleton AP_Mission scheduler-semaphore
@@ -285,7 +284,6 @@ userdata mavlink_mission_item_int_t field frame uint8_t read write  0 UINT8_MAX
 userdata mavlink_mission_item_int_t field current uint8_t read write  0 UINT8_MAX
 -- userdata mavlink_mission_item_int_t field autocontinue uint8_t read write  0 UINT8_MAX
 
-
 include AP_RPM/AP_RPM.h
 singleton AP_RPM alias RPM
 singleton AP_RPM method get_rpm boolean uint8_t 0 RPM_MAX_INSTANCES float'Null
@@ -293,7 +291,6 @@ singleton AP_RPM method get_rpm boolean uint8_t 0 RPM_MAX_INSTANCES float'Null
 include AP_Button/AP_Button.h
 singleton AP_Button alias button
 singleton AP_Button method get_button_state boolean uint8_t 1 AP_BUTTON_NUM_PINS
-
 
 include AP_Notify/ScriptingLED.h
 singleton ScriptingLED alias LED
@@ -309,3 +306,10 @@ singleton AP_MotorsMatrix depends APM_BUILD_TYPE(APM_BUILD_ArduPlane)||APM_BUILD
 singleton AP_MotorsMatrix alias MotorsMatrix
 singleton AP_MotorsMatrix method init boolean uint8_t 0 (AP_MOTORS_MAX_NUM_MOTORS-1)
 singleton AP_MotorsMatrix method add_motor_raw void int8_t 0 (AP_MOTORS_MAX_NUM_MOTORS-1) float -FLT_MAX FLT_MAX float -FLT_MAX FLT_MAX float -FLT_MAX FLT_MAX uint8_t 0 (AP_MOTORS_MAX_NUM_MOTORS-1)
+
+include AP_RSSI/AP_RSSI.h
+singleton AP_RSSI alias RSSI
+singleton AP_RSSI method read_receiver_rssi float
+
+ap_object AP_HAL::AnalogSource method set_pin void uint8_t 0 UINT8_MAX
+ap_object AP_HAL::AnalogSource method voltage_average float
