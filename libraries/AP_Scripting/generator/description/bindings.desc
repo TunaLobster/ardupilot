@@ -311,5 +311,5 @@ include AP_RSSI/AP_RSSI.h
 singleton AP_RSSI alias RSSI
 singleton AP_RSSI method read_receiver_rssi float
 
-ap_object AP_HAL::AnalogSource method set_pin void uint8_t 0 UINT8_MAX
-ap_object AP_HAL::AnalogSource method voltage_average float
+-- ap_object AP_HAL::AnalogSource method set_pin void uint8_t 0 UINT8_MAX
+-- ap_object AP_HAL::AnalogSource method voltage_average float
