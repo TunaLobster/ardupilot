@@ -262,7 +262,6 @@ userdata Parameter method get boolean float'Null
 userdata Parameter method set boolean float -FLT_MAX FLT_MAX
 userdata Parameter method set_and_save boolean float -FLT_MAX FLT_MAX
 
-
 include AP_Mission/AP_Mission.h
 singleton AP_Mission alias mission
 singleton AP_Mission scheduler-semaphore
@@ -292,7 +291,6 @@ userdata mavlink_mission_item_int_t field command uint16_t read write 0 UINT16_M
 userdata mavlink_mission_item_int_t field frame uint8_t read write  0 UINT8_MAX
 userdata mavlink_mission_item_int_t field current uint8_t read write  0 UINT8_MAX
 -- userdata mavlink_mission_item_int_t field autocontinue uint8_t read write  0 UINT8_MAX
-
 
 include AP_RPM/AP_RPM.h
 singleton AP_RPM alias RPM
@@ -329,7 +327,6 @@ singleton AC_AttitudeControl_Multi_6DoF method set_lateral_enable void boolean
 singleton AC_AttitudeControl_Multi_6DoF method set_forward_enable void boolean
 singleton AC_AttitudeControl_Multi_6DoF method set_offset_roll_pitch void float -FLT_MAX FLT_MAX float -FLT_MAX FLT_MAX
 
-
 include AP_Motors/AP_MotorsMatrix_6DoF_Scripting.h  depends APM_BUILD_TYPE(APM_BUILD_ArduCopter)
 singleton AP_MotorsMatrix_6DoF_Scripting depends APM_BUILD_TYPE(APM_BUILD_ArduCopter)
 singleton AP_MotorsMatrix_6DoF_Scripting alias Motors_6DoF
@@ -342,7 +339,6 @@ ap_object AP_HAL::I2CDevice method set_retries void uint8_t 0 20
 ap_object AP_HAL::I2CDevice method write_register boolean uint8_t 0 UINT8_MAX uint8_t 0 UINT8_MAX
 ap_object AP_HAL::I2CDevice method read_registers boolean uint8_t 0 UINT8_MAX &uint8_t'Null 1'literal
 ap_object AP_HAL::I2CDevice method set_address void uint8_t 0 UINT8_MAX
-
 
 ap_object AP_HAL::AnalogSource method set_pin void uint8_t 0 UINT8_MAX
 ap_object AP_HAL::AnalogSource method voltage_average float
@@ -364,3 +360,13 @@ singleton hal.gpio method pinMode void uint8_t 0 UINT8_MAX uint8_t 0 1
 singleton hal.analogin alias analog
 singleton hal.analogin literal
 singleton hal.analogin method channel AP_HAL::AnalogSource ANALOG_INPUT_NONE'literal
+
+include AP_Common/AP_FWVersion.h
+ap_object AP_FWVersion::fwversion alias fwversion
+ap_object AP_FWVersion::fwversion method vehicle_type uint8_t
+ap_object AP_FWVersion::fwversion method major uint8_t
+ap_object AP_FWVersion::fwversion method minor uint8_t
+ap_object AP_FWVersion::fwversion method patch uint8_t
+ap_object AP_FWVersion::fwversion method fw_type uint8_t
+ap_object AP_FWVersion::fwversion method board_type uint8_t
+ap_object AP_FWVersion::fwversion method board_subtype uint16_t
